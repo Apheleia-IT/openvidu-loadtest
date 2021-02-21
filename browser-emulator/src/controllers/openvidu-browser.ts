@@ -14,9 +14,11 @@ const browserManager: BrowserManager = new BrowserManager();
 app.post('/streamManager', async (req: Request, res: Response) => {
 	try {
 
-		if(areStreamManagerParamsCorrect(req)) {
+        let properties: PublisherProperties = req.body.properties;
+        properties.sessionName = req.body.sessionName;
+        properties.userId = req.body.userId;
+		if(areStreamManagerParamsCorrect(req.body.openviduSecret, req.body.openviduUrl, properties)) {
 			let browserMode: BrowserMode = req.body.browserMode || BrowserMode.EMULATE;
-			let properties: PublisherProperties = req.body.properties;
 			// Setting default role for publisher properties
 			properties.role = properties.role || OpenViduRole.PUBLISHER
 
@@ -72,10 +74,7 @@ app.delete('/streamManager/role/:role', (req: Request, res: Response) => {
 	}
 });
 
-function areStreamManagerParamsCorrect(req: Request): boolean {
-	const openviduSecret: string = req.body.openviduSecret;
-	const openviduUrl: string = req.body.openviduUrl;
-	let properties: PublisherProperties = req.body.properties;
+function areStreamManagerParamsCorrect(openviduSecret: string, openviduUrl: string, properties: PublisherProperties): boolean {
 
 	const tokenCanBeCreated = !!properties?.userId && !!properties?.sessionName && !!openviduUrl && !!openviduSecret;
 	const tokenHasBeenReceived = !!properties?.userId && !!properties?.token;
