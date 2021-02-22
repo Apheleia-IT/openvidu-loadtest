@@ -147,7 +147,7 @@ public class LoadTestController {
 					return;
 				}
 
-				this.showIterationReport(sessionNumber.get(), (sessionNumber.get() - 1) * 1, (sessionNumber.get() - 1) * participantsBySession + i);
+				this.showIterationReport(sessionNumber.get(), (sessionNumber.get() - 1) + 1, (sessionNumber.get() - 1) * participantsBySession + i);
 
 				response = this.browserEmulatorClient.createSubscriber(loadTestConfig.getUserNamePrefix() + userNumber,
 						loadTestConfig.getSessionNamePrefix() + sessionNumber.get());
