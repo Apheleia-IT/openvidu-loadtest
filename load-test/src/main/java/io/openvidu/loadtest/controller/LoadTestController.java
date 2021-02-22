@@ -66,7 +66,15 @@ public class LoadTestController {
 					this.cleanEnvironment();
 				}
 			} else if (testCase.is_1xN()) {
-				this.start1xNTest(testCase.getParticipants());
+				for (int i = 0; i < testCase.getParticipants().size(); i++) {
+					int participantsBySession = Integer.parseInt(testCase.getParticipants().get(i));
+					log.info("Starting test with 1:N session typology");
+					log.info("Each session will be composed by {} listeners and 1 publisher", participantsBySession);
+
+					this.start1xNTest(participantsBySession);
+					sleep(loadTestConfig.getSecondsToWaitAfterTestFinished());
+					this.cleanEnvironment();
+				}
 			} else if (testCase.is_NxM()) {
 				this.startNxMTest(testCase.getParticipants());
 			} else if (testCase.is_TEACHING()) {
@@ -95,7 +103,7 @@ public class LoadTestController {
 					return;
 				}
 
-				this.showIterationReport(sessionNumber.get(), i + 1, participantsBySession);
+				this.showIterationReport(sessionNumber.get(), (sessionNumber.get() - 1) * participantsBySession + i, (sessionNumber.get() - 1) * participantsBySession + i);
 				response = this.browserEmulatorClient.createPublisher(loadTestConfig.getUserNamePrefix() + i,
 						loadTestConfig.getSessionNamePrefix() + sessionNumber.get(), true, true);
 
@@ -111,8 +119,44 @@ public class LoadTestController {
 		}
 	}
 
-	private void start1xNTest(List<String> participants) {
 
+	private void start1xNTest(int participantsBySession) {
+		AtomicInteger sessionNumber = new AtomicInteger(0);
+		HttpResponse<String> response;
+		boolean responseIsOk = true;
+
+		while (responseIsOk) {
+			sessionNumber.getAndIncrement();
+			log.info("Starting session '{}'", loadTestConfig.getSessionNamePrefix() + sessionNumber.get());
+
+
+            //Create the publisher first, then the participants
+            response = this.browserEmulatorClient.createPublisher(loadTestConfig.getUserNamePrefix() + "publisher",
+                    loadTestConfig.getSessionNamePrefix() + sessionNumber.get(), true, true);
+
+            responseIsOk = processResponse(response);
+
+			for (int i = 0; i < participantsBySession; i++) {
+
+				if (!responseIsOk) {
+					return;
+				}
+
+				this.showIterationReport(sessionNumber.get(), (sessionNumber.get() - 1) * 1, (sessionNumber.get() - 1) * participantsBySession + i);
+
+				response = this.browserEmulatorClient.createSubscriber(loadTestConfig.getUserNamePrefix() + i,
+						loadTestConfig.getSessionNamePrefix() + sessionNumber.get());
+
+				responseIsOk = processResponse(response);
+
+				log.info("Waiting {} seconds between participants",
+						loadTestConfig.getSecondsToWaitBetweenParticipants());
+				sleep(loadTestConfig.getSecondsToWaitBetweenParticipants());
+			}
+
+			log.info("Waiting {} seconds between session", loadTestConfig.getSecondsToWaitBetweenSession());
+			sleep(loadTestConfig.getSecondsToWaitBetweenSession());
+		}
 	}
 
 	private void startNxMTest(List<String> participants) {
@@ -143,20 +187,13 @@ public class LoadTestController {
 
 	}
 
-	private void showIterationReport(int sessionsCreated, int currentUserNumber, int participantsBySession) {
-		int sessionsCompleted = 0;
-		if (sessionsCreated > 1) {
-			sessionsCompleted = sessionsCreated - 1;
-		}
+	private void showIterationReport(int sessionsCreated, int publisherCreated, int subscriberCreated) {
 
-		int totalPublishers = (participantsBySession * sessionsCompleted) + currentUserNumber;
-		int totalSubscribers = (participantsBySession * (participantsBySession - 1) * sessionsCompleted)
-				+ currentUserNumber * (currentUserNumber - 1);
 
 		log.info("-- Iteration report ---");
 		log.info("Total sessions created: {}", sessionsCreated);
-		log.info("Total publishers created: {}", totalPublishers);
-		log.info("Total subscribers created: {}", totalSubscribers);
+		log.info("Total publishers created: {}", publisherCreated);
+		log.info("Total subscribers created: {}", subscriberCreated);
 		log.info("-- ----------------- ---");
 	}
 

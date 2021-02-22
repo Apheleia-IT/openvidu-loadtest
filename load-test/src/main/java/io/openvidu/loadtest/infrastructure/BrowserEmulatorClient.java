@@ -85,22 +85,31 @@ public class BrowserEmulatorClient {
 		}
 	}
 	
-//	public String createSubscriber(String userId, String sessionName) {
-//		
-//		JsonObject jsonBody = new JsonObject();
-//		JsonObject properties = new JsonObject();
-//		jsonBody.addProperty("userId", userId);
-//		jsonBody.addProperty("sessionName", sessionName);
-//		properties.addProperty("role", "SUBSCRIBER");
-//		jsonBody.add("properties", new JsonObject());
-//		try {
-//			this.httpClient.sendPost(getWorkerUrl() + "/openvidu-browser/streamManager", jsonBody);
-//		} catch (IOException | InterruptedException e) {
-//			e.printStackTrace();
-//		}
-//
-//		return "";
-//	}
+	public HttpResponse<String> createSubscriber(String userId, String sessionName) {
+		String workerUrl = "";
+		JsonObject jsonBody = new JsonObject();
+		JsonObject properties = new JsonObject();
+		jsonBody.addProperty("openviduUrl", this.loadTestConfig.getOpenViduUrl());
+		jsonBody.addProperty("openviduSecret", this.loadTestConfig.getOpenViduSecret());
+		jsonBody.addProperty("userId", userId);
+		jsonBody.addProperty("sessionName", sessionName);
+		properties.addProperty("role", "SUBSCRIBER");
+		jsonBody.add("properties", properties);
+		try {
+			workerUrl = getNextWorkerUrl();
+			log.info("Worker selected address: {}", workerUrl);
+			log.info("Connecting user: '{}' into session: '{}'", userId, sessionName);
+			return this.httpClient.sendPost(workerUrl + "/openvidu-browser/streamManager", jsonBody, null, new HashMap());
+		} catch (IOException | InterruptedException e) {
+			if(e.getMessage().equalsIgnoreCase("Connection refused")) {
+				log.error("Error trying connect with worker on {}: {}", workerUrl, e.getMessage());
+				System.exit(1);
+			}
+			e.printStackTrace();
+		}
+		return null;
+
+	}
 	
 //	public int getCapacity(String typology, int participantsPerSession) {
 //		int capacity = 0;
