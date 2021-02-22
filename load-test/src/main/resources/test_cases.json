@@ -1,10 +1,25 @@
 {
 	"testcases": [
 		{
+			"typology": "1:M",
+			"participants": [2],
+			"sessions": "1",
+			"desciption": "This test case will add 1 sessions (until it reaches its limit) of 1 publisher and subscribers that the array of participants indicates"
+		}
+	],
+    "note": "You can currently only run one testscase at a time.",
+	"example_testcases": [
+		{
 			"typology": "N:N",
 			"participants": [2],
 			"sessions": "infinite",
 			"desciption": "This test case will add infinite sessions (until it reaches its limit) of publishers that the array of participants indicates"
+		},
+		{
+			"typology": "1:M",
+			"participants": [2],
+			"sessions": "1",
+			"desciption": "This test case will add 1 sessions (until it reaches its limit) of 1 publisher and subscribers that the array of participants indicates"
 		}
 	]
 }
