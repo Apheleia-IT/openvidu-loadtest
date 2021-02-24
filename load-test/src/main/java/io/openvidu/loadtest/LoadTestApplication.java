@@ -33,7 +33,7 @@ public class LoadTestApplication {
 	
 
 	public static void main(String[] args) {
-		SpringApplication.run(LoadTestApplication.class, args);
+		SpringApplication.run(LoadTestApplication.class, args).close();
 	}
 
 	@PostConstruct
