@@ -32,10 +32,10 @@ export class BrowserManager {
 	}
 
 	deleteStreamManagerWithRole(role: any) {
-		throw new Error('Method not implemented.');
+		this.ovBrowserService.deleteStreamManagerWithRole(role);
 	}
 	deleteStreamManagerWithConnectionId(connectionId: string) {
-		throw new Error('Method not implemented.');
+		this.ovBrowserService.deleteStreamManagerWithConnectionId(connectionId);
 	}
 
 	private async createStreamManagerFromRealBrowser(properties: PublisherProperties): Promise<string>{
